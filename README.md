@@ -4,9 +4,9 @@ LightBnb is a mockup of a fictional service similar to AirBnb created for the pu
 
 ## Screenshots
 
-!["Screenshot of Search Options"]
-!["Screenshot of My Reservations"]
-!["Screenshot of Main Feed"]
+!["Screenshot of Main Feed"](https://github.com/bendhallam/LightBnB/blob/master/docs/LightBnB%20main_feed.png)
+!["Screenshot of My Reservations"](https://github.com/bendhallam/LightBnB/blob/master/docs/LightBnB%20my_reservations.png)
+!["Screenshot of Search Function"](https://github.com/bendhallam/LightBnB/blob/master/docs/LightBnB%20search_function.png)
 
 
 ## Getting Started
@@ -14,8 +14,11 @@ LightBnb is a mockup of a fictional service similar to AirBnb created for the pu
 1. [Create](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) a new repository using this repository as a template.
 2. Clone your repository onto your local device.
 3. Install dependencies using the `npm install` command.
-3. Start the web server using the `npm run local` command. The app will be served at <http://localhost:8080/>.
-4. Go to <http://localhost:8080/> in your browser.
+3. Start the web server using the `npm run local` command from within the LightBnB_WebApp directory. The app will be served at <http://localhost:3000/>.
+4. Go to <http://localhost:3000/> in your browser.
+5. Use the Sign Up button to create an account.
+6. Log in to access your reservations as well as your properties.
+7. Use the Search button to filter properties by city, price range, and minimum rating. 
 
 ## Dependencies
 
@@ -25,6 +28,4 @@ LightBnb is a mockup of a fictional service similar to AirBnb created for the pu
 - pg
 - Cookie-Session
 - Bcrypt
-
-# Endnote
 
