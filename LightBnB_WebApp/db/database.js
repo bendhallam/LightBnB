@@ -18,7 +18,7 @@ const pool = new Pool({
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function (email) {
+const getUserWithEmail = function(email) {
   return pool
     .query(`SELECT * 
             FROM users 
@@ -37,7 +37,7 @@ const getUserWithEmail = function (email) {
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function (id) {
+const getUserWithId = function(id) {
   return pool
     .query(`SELECT * 
             FROM users 
@@ -56,7 +56,7 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
+const addUser = function(user) {
   return pool
     .query(`INSERT INTO users (name, email, password) 
             VALUES ($1, $2, $3) 
@@ -77,7 +77,7 @@ const addUser = function (user) {
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
+const getAllReservations = function(guest_id, limit = 10) {
   return pool
     .query(`SELECT properties.*, AVG(property_reviews.rating) as average_rating
             FROM reservations
@@ -106,17 +106,58 @@ const getAllReservations = function (guest_id, limit = 10) {
  */
 
 const getAllProperties = (options, limit = 10) => {
-  return pool
-    .query(`SELECT * 
-            FROM properties 
-            LIMIT $1`, [limit])
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-      return { error: 'Failed to get properties: ' + err.message};
-    });
+  const queryParams = [];
+  let queryString = `
+                      SELECT properties.*, AVG(property_reviews.rating) AS average_rating
+                      FROM properties
+                      JOIN property_reviews ON properties.id = property_reviews.property_id
+                      `;
+
+  // Initialize a flag to check if WHERE clause has been added
+  let whereAdded = false;
+
+  // Filter by city
+  if (options.city) {
+    queryParams.push(`${options.city}`);
+    queryString += `WHERE city LIKE $${queryParams.length} `;
+    whereAdded = true;
+  }
+
+  // Filter by owner id
+  if (options.owner_id) {
+    queryParams.push(options.owner_id);
+    queryString += whereAdded ? `AND owner_id = $${queryParams.length} ` : `WHERE owner_id = $${queryParams.length} `;
+    whereAdded = true;
+  }
+
+  // Filter by price range
+  if (options.minimum_price_per_night && options.maximum_price_per_night) {
+    queryParams.push(options.minimum_price_per_night * 100);
+    queryParams.push(options.maximum_price_per_night * 100);
+    queryString += whereAdded ? `AND cost_per_night > $${queryParams.length - 1} AND cost_per_night < $${queryParams.length} ` : `WHERE cost_per_night > $${queryParams.length - 1} AND cost_per_night < $${queryParams.length} `;
+    whereAdded = true;
+  }
+
+  // Use HAVING clause for minimum rating
+  queryString += `
+  GROUP BY properties.id
+  `;
+  
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    queryString += `
+    HAVING AVG(property_reviews.rating) >= $${queryParams.length} `;
+  }
+
+  // Cap off query with ordering and limiting
+  queryParams.push(limit);
+  queryString += `
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};`;
+
+  console.log(queryString, queryParams);
+
+  return pool.query(queryString, queryParams).then((res) => res.rows);
 };
 
 /**
@@ -128,8 +169,8 @@ const addProperty = (property) => {
   return pool
     .query(`INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, country, street, city, province, post_code, active) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) 
-            RETURNING *;`, 
-      [owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, country, street, city, province, post_code, active])
+            RETURNING *;`,
+    [owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, country, street, city, province, post_code, active])
     .then((result) => {
       return result.rows[0];
     })

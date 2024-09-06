@@ -15,12 +15,12 @@ const queryString = `
   JOIN cohorts ON cohort_id = cohorts.id
   WHERE cohorts.name = 'JUL02'
   ORDER BY teacher;
-`
+`;
 
 pool
   .query(queryString)
   .then(res => {
     res.rows.forEach(row => {
       console.log(`${row.cohort}: ${row.teacher}`);
-    })
+    });
   });
